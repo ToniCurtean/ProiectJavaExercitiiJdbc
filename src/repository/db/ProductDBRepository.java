@@ -1,7 +1,6 @@
 package repository.db;
 
-import model.Product;
-import model.User;
+import model.*;
 import org.mariadb.jdbc.Statement;
 import repository.ProductRepository;
 import repository.Repository;
@@ -26,10 +25,11 @@ public class ProductDBRepository implements ProductRepository {
     @Override
     public Product add(Product entity) {
         Connection conn=jdbcUtils.getConnection();
-        try(PreparedStatement preparedStatement=conn.prepareStatement("insert into product(nume_p,pret,cantitate) values (?,?,?)", Statement.RETURN_GENERATED_KEYS)){
+        try(PreparedStatement preparedStatement=conn.prepareStatement("insert into product(nume_p,pret,cantitate,categorie) values (?,?,?,?)", Statement.RETURN_GENERATED_KEYS)){
             preparedStatement.setString(1,entity.getName());
             preparedStatement.setBigDecimal(2, BigDecimal.valueOf(entity.getPrice()));
             preparedStatement.setInt(3,entity.getQuantity());
+            preparedStatement.setString(4,entity.getProductCategory().toString());
             preparedStatement.executeUpdate();
             ResultSet resultSet= preparedStatement.getGeneratedKeys();
             if(resultSet.next())
@@ -58,11 +58,12 @@ public class ProductDBRepository implements ProductRepository {
     @Override
     public void update(Product entity) {
         Connection conn=jdbcUtils.getConnection();
-        try(PreparedStatement preparedStatement=conn.prepareStatement("update product set nume_p=?,pret=?,cantitate=? where cod_p=?")){
+        try(PreparedStatement preparedStatement=conn.prepareStatement("update product set nume_p=?,pret=?,cantitate=?,categorie=? where cod_p=?")){
             preparedStatement.setString(1,entity.getName());
             preparedStatement.setBigDecimal(2, BigDecimal.valueOf(entity.getPrice()));
             preparedStatement.setInt(3,entity.getQuantity());
-            preparedStatement.setInt(4,entity.getId());
+            preparedStatement.setString(4,entity.getProductCategory().toString());
+            preparedStatement.setInt(5,entity.getId());
             int result=preparedStatement.executeUpdate();
             if(result==0)
                 throw new RepositoryException("Couldn't update product in db");
@@ -79,7 +80,14 @@ public class ProductDBRepository implements ProductRepository {
             preparedStatement.setInt(1,id);
             ResultSet resultSet=preparedStatement.executeQuery();
             if(resultSet.next()){
-                product=new Product(resultSet.getInt("cod_p"),resultSet.getString("nume_p"),Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                product = switch (ProductCategory.valueOf(resultSet.getString("categorie"))) {
+                    case ELECTRONICS ->
+                            new ElectronicProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case FOOD ->
+                            new FoodProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case CLEANING ->
+                            new CleaningProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                };
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -96,7 +104,14 @@ public class ProductDBRepository implements ProductRepository {
         try(PreparedStatement preparedStatement=conn.prepareStatement("select * from product")){
             ResultSet resultSet=preparedStatement.executeQuery();
             while(resultSet.next()){
-                Product product=new Product(resultSet.getInt("cod_p"),resultSet.getString("nume_p"),Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                Product product = switch (ProductCategory.valueOf(resultSet.getString("categorie"))) {
+                    case ELECTRONICS ->
+                            new ElectronicProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case FOOD ->
+                            new FoodProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case CLEANING ->
+                            new CleaningProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                };
                 products.add(product);
             }
         } catch (SQLException e) {
@@ -116,7 +131,14 @@ public class ProductDBRepository implements ProductRepository {
             preparedStatement.setString(1,prodName);
             ResultSet resultSet=preparedStatement.executeQuery();
             if(resultSet.next()){
-                product=new Product(resultSet.getInt("cod_p"),resultSet.getString("nume_p"),Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                product = switch (ProductCategory.valueOf(resultSet.getString("categorie"))) {
+                    case ELECTRONICS ->
+                            new ElectronicProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case FOOD ->
+                            new FoodProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))), resultSet.getInt("cantitate"));
+                    case CLEANING ->
+                            new CleaningProduct(resultSet.getInt("cod_p"), resultSet.getString("nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("pret"))),resultSet.getInt("cantitate"));
+                };
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -138,6 +160,5 @@ public class ProductDBRepository implements ProductRepository {
             System.err.println(e.getMessage());
         }
     }
-
 
 }

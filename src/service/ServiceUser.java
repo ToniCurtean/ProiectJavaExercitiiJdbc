@@ -24,13 +24,17 @@ public class ServiceUser {
 
     public void add(UserDTO userDTO){
         validator.validate(userDTO);
-        if(this.userRepository.findUserByLastAndFirstName(userDTO.lastName(), userDTO.firstName())!=null)
-            throw new ServiceException("The user is already registered!");
-        User user= DTOUtils.getUserFromDTO(userDTO);
+        User user;
         try{
-            this.userRepository.add(user);
-        }catch(RepositoryException e){
-            System.err.println(e.getMessage());
+            this.userRepository.findUserByLastAndFirstName(userDTO.lastName(), userDTO.firstName());
+            throw new ServiceException("The user is already registered!");
+        }catch(RepositoryException ex){
+            user= DTOUtils.getUserFromDTO(userDTO);
+            try{
+                this.userRepository.add(user);
+            }catch(RepositoryException e){
+                System.err.println(e.getMessage());
+            }
         }
     }
 

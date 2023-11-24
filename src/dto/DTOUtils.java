@@ -15,11 +15,13 @@ public class DTOUtils {
     }
 
     public static ProductDTO getProductDTO(Product product){
-        return new ProductDTO(product.getId(), product.getName(), product.getPrice(), product.getQuantity());
+        return new ProductDTO(product.getId(), product.getName(), product.getPrice(), product.getQuantity(),product.getProductCategory());
     }
 
     public static Product getProductFromDTO(ProductDTO productDTO){
-        return new Product(productDTO.id(), productDTO.name(), productDTO.price(), productDTO.quantity());
+        Product product=new Product(productDTO.id(),productDTO.name(),productDTO.price(),productDTO.quantity());
+        product.setProductCategory(productDTO.productCategory());
+        return product;
     }
 
     public static OrderDTO getOrderDTO(Order order){

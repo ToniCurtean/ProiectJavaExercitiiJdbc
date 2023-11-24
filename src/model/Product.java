@@ -7,6 +7,7 @@ public class Product {
     private String name;
     private Double price;
     private Integer quantity;
+    private ProductCategory productCategory;
 
     public Product(Integer id, String name, Double price, Integer quantity) {
         this.id = id;
@@ -51,6 +52,14 @@ public class Product {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public ProductCategory getProductCategory() {
+        return productCategory;
+    }
+
+    public void setProductCategory(ProductCategory productCategory) {
+        this.productCategory = productCategory;
     }
 
     @Override

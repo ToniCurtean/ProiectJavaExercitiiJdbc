@@ -1,7 +1,6 @@
 package repository.db;
 
-import model.OrderProduct;
-import model.Product;
+import model.*;
 import repository.OrderProductRepository;
 import repository.exceptions.RepositoryException;
 
@@ -111,11 +110,18 @@ public class OrderProductDBRepository implements OrderProductRepository {
     public List<Product> getProductsForOrder(Integer orderId){
         List<Product> products=new ArrayList<>();
         Connection conn=jdbcUtils.getConnection();
-        try(PreparedStatement preparedStatement=conn.prepareStatement("select p.cod_p,p.nume_p,p.pret,op.cantitate_p from product as p inner join orderproduct as op on p.cod_p=op.cod_p where op.cod_o=?")){
+        try(PreparedStatement preparedStatement=conn.prepareStatement("select p.cod_p,p.nume_p,p.pret,op.cantitate_p,p.categorie from product as p inner join orderproduct as op on p.cod_p=op.cod_p where op.cod_o=?")){
             preparedStatement.setInt(1,orderId);
             ResultSet resultSet= preparedStatement.executeQuery();
             while(resultSet.next()){
-                Product product=new Product(resultSet.getInt("p.cod_p"),resultSet.getString("p.nume_p"),Double.valueOf(String.valueOf(resultSet.getBigDecimal("p.pret"))),resultSet.getInt("op.cantitate_p"));
+                Product product = switch (ProductCategory.valueOf(resultSet.getString("p.categorie"))) {
+                    case ELECTRONICS ->
+                            new ElectronicProduct(resultSet.getInt("p.cod_p"), resultSet.getString("p.nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("p.pret"))), resultSet.getInt("op.cantitate_p"));
+                    case FOOD ->
+                            new FoodProduct(resultSet.getInt("p.cod_p"), resultSet.getString("p.nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("p.pret"))), resultSet.getInt("op.cantitate_p"));
+                    case CLEANING ->
+                            new CleaningProduct(resultSet.getInt("p.cod_p"), resultSet.getString("p.nume_p"), Double.valueOf(String.valueOf(resultSet.getBigDecimal("p.pret"))),resultSet.getInt("op.cantitate_p"));
+                };
                 products.add(product);
             }
         } catch (SQLException e) {

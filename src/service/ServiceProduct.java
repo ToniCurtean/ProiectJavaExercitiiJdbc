@@ -21,13 +21,17 @@ public class ServiceProduct {
 
     public void add(ProductDTO dto) {
         validator.validate(dto);
-        if(this.productRepository.findProductByName(dto.name())!=null)
+        Product product;
+        try{
+            this.productRepository.findProductByName(dto.name());
             throw new ServiceException("The product already exists!");
-        Product product = DTOUtils.getProductFromDTO(dto);
-        try {
-            this.productRepository.add(product);
-        } catch (RepositoryException exception) {
-            System.err.println(exception.getMessage());
+        }catch(RepositoryException ex){
+            product = DTOUtils.getProductFromDTO(dto);
+            try {
+                this.productRepository.add(product);
+            } catch (RepositoryException exception) {
+                System.err.println(exception.getMessage());
+            }
         }
     }
 

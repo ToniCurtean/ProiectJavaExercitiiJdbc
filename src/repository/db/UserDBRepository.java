@@ -122,6 +122,8 @@ public class UserDBRepository implements UserRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        if(user==null)
+            throw new RepositoryException("Couldn't find the user with the given name");
         return user;
     }
 }

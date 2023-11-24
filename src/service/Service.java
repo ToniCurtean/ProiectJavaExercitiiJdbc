@@ -99,7 +99,7 @@ public class Service {
         if(products.stream().noneMatch(product->product.price()>=minPrice)){
             System.out.println("No products over the price of "+minPrice);
         }else{
-            products.stream().filter((product)->product.price()>=minPrice && product.quantity()>0).forEach((product)->System.out.println("Product name: " + product.name()+" , Price: "+product.price()+" , Available Quantity: " +product.quantity()));
+            products.stream().filter((product)->product.price()>=minPrice && product.quantity()>0).forEach((product)->System.out.println("Product name: " + product.name()+" , Price: "+product.price()+" , Available Quantity: " +product.quantity() + " , Category: " + product.productCategory().toString()));
         }
     }
 
@@ -109,7 +109,7 @@ public class Service {
         if(products.stream().noneMatch(product->product.price()<=maxPrice))
             System.out.println("No products below the price of "+ maxPrice);
         else{
-            products.stream().filter((product)->product.price()<=maxPrice && product.quantity()>0).forEach((product)->System.out.println("Product name: " + product.name()+" , Price: "+product.price()+" , Available Quantity: " +product.quantity()));
+            products.stream().filter((product)->product.price()<=maxPrice && product.quantity()>0).forEach((product)->System.out.println("Product name: " + product.name()+" , Price: "+product.price()+" , Available Quantity: " +product.quantity()+ " , Category: " + product.productCategory()));
         }
     }
 
@@ -134,6 +134,15 @@ public class Service {
             System.out.println("Updated the product price successfully!");
         }catch (RepositoryException ex){
             System.err.println(ex.getMessage());
+        }
+    }
+
+    public void showProductsForCategory(String productCategory) {
+        List<ProductDTO> products=this.serviceProduct.findAll();
+        if(products.stream().noneMatch(product->product.productCategory().toString().equals(productCategory)))
+            System.out.println("No products for the category "+ productCategory);
+        else{
+            products.stream().filter((product)->product.productCategory().toString().equals(productCategory) && product.quantity()>0).forEach((product)->System.out.println("Product name: " + product.name()+" , Price: "+product.price()+" , Available Quantity: " +product.quantity()+ " , Category: " + product.productCategory()));
         }
     }
 }
